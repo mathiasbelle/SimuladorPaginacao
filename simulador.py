@@ -53,7 +53,7 @@ class Aplication:
         self.container["width"] = 150
         self.container.pack()
 
-        self.tamanhoPaginaLabel = Label(self.container, text = "Selecione o tamanaho da página", font = self.fontePadrao)
+        self.tamanhoPaginaLabel = Label(self.container, text = "Selecione o tamanho da página", font = self.fontePadrao)
         #self.tamanhoPaginaLabel["width"] = 100
         #self.tamanhoPaginaLabel["height"] = 15
         self.tamanhoPaginaLabel.pack()
@@ -64,7 +64,7 @@ class Aplication:
         self.tamanhosPaginaMenu = OptionMenu(self.container, self.tamanhosPaginaStrings, *self.tamanhosPagina)
         self.tamanhosPaginaMenu.pack()
 
-        self.tamanhoPaginaLabel = Label(self.container, text = "Selecione o tamanaho da memória", font = self.fontePadrao)
+        self.tamanhoPaginaLabel = Label(self.container, text = "Selecione o tamanho da memória", font = self.fontePadrao)
         self.tamanhoPaginaLabel.pack()
 
         self.tamanhosMemoria = ["128","512","1024","2048"]
@@ -160,6 +160,8 @@ class Aplication:
         processosDentro = []
         #filaEspera = []
         contadorTempo = 1
+        tempoEspera = 0
+        tempoTotal = 0
         cond = True
         while(cond):
             print("Quantidade de processos dentro: ",len(processosDentro))
@@ -179,9 +181,13 @@ class Aplication:
                         print("Processo ID ",self.listaProcessos[0].ID," entrou.")
                         qtdPaginas -= self.listaProcessos[0].qtd_paginas
                         processosDentro.append(self.listaProcessos.pop(0))
+                        contadorTempo+=1
+                        tempoEspera = 0
                         #print("Quantidade de processos dentro: ",len(processosDentro))
                     else:
                         print("Sem espaço para o processo ",self.listaProcessos[0].ID,", processo esperando.")
+                        print("Tempo de espera: ",tempoEspera)
+                        tempoEspera+=1
                         break
                         #filaEspera.append(self.listaProcessos[0])
                     #contadorTempo+=1
@@ -191,16 +197,24 @@ class Aplication:
                     cond2 = False
                 #x+=1
             if processosDentro:
+                print("Tempo total = ", tempoTotal)
                 #print("Quantidade de processos dentro: ",len(processosDentro))
-                for a in range(len(processosDentro)):
-                    if(processosDentro[a].T_MORTO <= contadorTempo):
+                #for a in range(len(processosDentro)):
+                cond3 = True
+                a = 0
+                while(cond3):
+                    if(a == len(processosDentro)):
+                        break
+                    if(processosDentro[a].T_MORTO <= tempoTotal):
                         qtdPaginas += processosDentro[a].qtd_paginas
                         print("Processo ID = ",processosDentro[a].ID," saiu.")
                         processosDentro.pop(a)
                         a-=1
+                    a+=1
                         
+            tempoTotal = contadorTempo+tempoEspera
+            #contadorTempo+=1
 
-            contadorTempo+=1
             if not self.listaProcessos and processosDentro:
                 cond = False
             #input()
