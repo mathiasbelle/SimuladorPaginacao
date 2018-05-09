@@ -87,7 +87,7 @@ class Aplication:
         self.confirmar.pack()
 
     def openfile(self):
-        self.filename = askopenfilename(title = "Selecionar arquivo",filetypes = (("csv","*.csv"),("all files","*.*"))) 
+        self.filename = askopenfilename(title = "Selecionar arquivo",filetypes = (("csv","*.csv"),("txt",".txt"),("all files","*.*"))) 
         print(self.filename)
         self.caminho.delete(0, END)
         self.caminho.insert(0,self.filename)
@@ -115,8 +115,8 @@ class Aplication:
 
             self.listaProcessos.append(processoAtual)
         
-        for x in range(0,len(self.listaProcessos)):
-            print("\nID: ",self.listaProcessos[x].ID,"\nT_CRIADO: ",self.listaProcessos[x].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[x].T_MORTO,"\nTAMANHO: ",self.listaProcessos[x].TAMANHO, "\nQtd páginas: ", processoAtual.qtd_paginas)
+        #for x in range(0,len(self.listaProcessos)):
+        #    print("\nID: ",self.listaProcessos[x].ID,"\nT_CRIADO: ",self.listaProcessos[x].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[x].T_MORTO,"\nTAMANHO: ",self.listaProcessos[x].TAMANHO, "\nQtd páginas: ", processoAtual.qtd_paginas)
 
    # def janelaSimulacao(self):
         #self.master.withdraw()
@@ -162,37 +162,42 @@ class Aplication:
         contadorTempo = 1
         cond = True
         while(cond):
+            print("Quantidade de processos dentro: ",len(processosDentro))
+            print("TEMPO: ", contadorTempo, "\nQuantidade de páginas disponíveis: ",qtdPaginas)
+            input()
             #print("\n TEMPO: ", contadorTempo)
             cond2 = True
-            x = 0
+            #x = 0
             while(cond2):
-                input()
-                print("x = ",x,"\nContador tempo: ", contadorTempo, "\nQuantidade de páginas: ",qtdPaginas)
+                #print("x = ",x,"\nContador tempo: ", contadorTempo, "\nQuantidade de páginas: ",qtdPaginas)
+                #print("TEMPO: ", contadorTempo, "\nQuantidade de páginas: ",qtdPaginas)
                 #print("Processo atual = ", self.listaProcessos[0].ID)
-                print("\nID: ",self.listaProcessos[0].ID,"\nT_CRIADO: ",self.listaProcessos[0].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[0].T_MORTO,"\nTAMANHO: ",self.listaProcessos[0].TAMANHO)
+                #print("\nID: ",self.listaProcessos[0].ID,"\nT_CRIADO: ",self.listaProcessos[0].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[0].T_MORTO,"\nTAMANHO: ",self.listaProcessos[0].TAMANHO)
                 if(self.listaProcessos[0].T_CRIADO <= contadorTempo): #and self.listaProcessos[0].qtd_paginas <= qtdPaginas
+                    print("\nID: ",self.listaProcessos[0].ID,"\nT_CRIADO: ",self.listaProcessos[0].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[0].T_MORTO,"\nTAMANHO: ",self.listaProcessos[0].TAMANHO)
                     if(self.listaProcessos[0].qtd_paginas <= qtdPaginas):
-                        print("\nProcesso ID ",self.listaProcessos[0].ID," entrou.")
+                        print("Processo ID ",self.listaProcessos[0].ID," entrou.")
                         qtdPaginas -= self.listaProcessos[0].qtd_paginas
                         processosDentro.append(self.listaProcessos.pop(0))
-                        print("Quantidade de processos dentro: ",len(processosDentro))
+                        #print("Quantidade de processos dentro: ",len(processosDentro))
                     else:
-                        print("Sem espaço para o processo ",self.listaProcessos[0].ID,", processo esperando.\n")
+                        print("Sem espaço para o processo ",self.listaProcessos[0].ID,", processo esperando.")
                         break
                         #filaEspera.append(self.listaProcessos[0])
                     #contadorTempo+=1
                     #x+=1
-                    print("XX = ",x)
+                    #print("XX = ",x)
                 else:
                     cond2 = False
-                x+=1
+                #x+=1
             if processosDentro:
-                print("Quantidade de processos dentro: ",len(processosDentro))
-                for a in range(0, len(processosDentro)):
+                #print("Quantidade de processos dentro: ",len(processosDentro))
+                for a in range(len(processosDentro)):
                     if(processosDentro[a].T_MORTO <= contadorTempo):
                         qtdPaginas += processosDentro[a].qtd_paginas
                         print("Processo ID = ",processosDentro[a].ID," saiu.")
                         processosDentro.pop(a)
+                        a-=1
                         
 
             contadorTempo+=1
