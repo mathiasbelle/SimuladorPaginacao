@@ -158,38 +158,47 @@ class Aplication:
         # = math.ceil(self.listaProcessos[0].TAMANHO/tamanhoPagina)
         #print("N = ",n)
         processosDentro = []
-        filaEspera = []
+        #filaEspera = []
         contadorTempo = 1
         cond = True
         while(cond):
-            print("\n TEMPO: ", contadorTempo)
+            #print("\n TEMPO: ", contadorTempo)
             cond2 = True
+            x = 0
             while(cond2):
+                input()
                 print("x = ",x,"\nContador tempo: ", contadorTempo, "\nQuantidade de páginas: ",qtdPaginas)
-                print("Processo atual = ", self.listaProcessos[x].ID)
-                if(self.listaProcessos[0].T_CRIADO == contadorTempo): #and self.listaProcessos[0].qtd_paginas <= qtdPaginas
+                #print("Processo atual = ", self.listaProcessos[0].ID)
+                print("\nID: ",self.listaProcessos[0].ID,"\nT_CRIADO: ",self.listaProcessos[0].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[0].T_MORTO,"\nTAMANHO: ",self.listaProcessos[0].TAMANHO)
+                if(self.listaProcessos[0].T_CRIADO <= contadorTempo): #and self.listaProcessos[0].qtd_paginas <= qtdPaginas
                     if(self.listaProcessos[0].qtd_paginas <= qtdPaginas):
-                        print("\nProcesso ID ",self.listaProcessos[x].ID," entrou.")
-                        qtdPaginas -= self.listaProcessos[x].qtd_paginas
+                        print("\nProcesso ID ",self.listaProcessos[0].ID," entrou.")
+                        qtdPaginas -= self.listaProcessos[0].qtd_paginas
                         processosDentro.append(self.listaProcessos.pop(0))
                         print("Quantidade de processos dentro: ",len(processosDentro))
                     else:
-                        print("Sem espaço para o processo ",self.listaProcessos[x].ID,", processo entrou na fila de espera.\n")
-                        filaEspera.append(self.listaProcessos[0])
-                    contadorTempo+=1
-            if not self.listaProcessos:
+                        print("Sem espaço para o processo ",self.listaProcessos[0].ID,", processo esperando.\n")
+                        break
+                        #filaEspera.append(self.listaProcessos[0])
+                    #contadorTempo+=1
+                    #x+=1
+                    print("XX = ",x)
+                else:
+                    cond2 = False
+                x+=1
+            if processosDentro:
                 print("Quantidade de processos dentro: ",len(processosDentro))
-                for x in range(0, len(processosDentro)):
-                    if(processosDentro[
+                for a in range(0, len(processosDentro)):
+                    if(processosDentro[a].T_MORTO <= contadorTempo):
+                        qtdPaginas += processosDentro[a].qtd_paginas
+                        print("Processo ID = ",processosDentro[a].ID," saiu.")
+                        processosDentro.pop(a)
                         
-                        x].T_MORTO == contadorTempo):
-                        qtdPaginas += processosDentro[x].qtd_paginas
-                        processosDentro.pop(x)
 
             contadorTempo+=1
-            if not self.listaProcessos:
+            if not self.listaProcessos and processosDentro:
                 cond = False
-            input()
+            #input()
     
 root = Tk()
 Aplication(root)
