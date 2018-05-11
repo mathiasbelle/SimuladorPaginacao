@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename
 import math
 
-
 class Simulacao:
     ID = 0
     T_CRIADO = 0
@@ -12,12 +11,6 @@ class Simulacao:
     tempoMorrer = 0
 
 class Aplication:
-
-    #ID = 0
-    #T_CRIADO = 0
-    #T_MORTO = 0
-    #TAMANHO = 0
-    #qtd_paginas = 0
     listaProcessos = []
 
     def __init__(self, master):
@@ -77,7 +70,6 @@ class Aplication:
             janelaErro = Label(container, text = type(ex), font = 100)
             janelaErro.pack()
             return False
-        #listaProcessos = []
     
         for lena in arquivo:
             processoAtual = Simulacao()
@@ -87,18 +79,9 @@ class Aplication:
             processoAtual.T_MORTO = int(linha[2])
             processoAtual.TAMANHO = int(linha[3])
             processoAtual.qtd_paginas = math.ceil(processoAtual.TAMANHO/int(self.tamanhosPaginaStrings.get()))
-
             self.listaProcessos.append(processoAtual)
-        arquivo.close()
-        #for x in range(0,len(self.listaProcessos)):
-        #    print("\nID: ",self.listaProcessos[x].ID,"\nT_CRIADO: ",self.listaProcessos[x].T_CRIADO,"\nT_MORTO: ",self.listaProcessos[x].T_MORTO,"\nTAMANHO: ",self.listaProcessos[x].TAMANHO, "\nQtd páginas: ", processoAtual.qtd_paginas)
 
-   # def janelaSimulacao(self):
-        #self.master.withdraw()
-        #self.newWindow = Toplevel(self.master)
-        #self.container2 = Frame(self.master)
-        #self.container2.pack()
-       # lerArquivo(self.caminho.get())
+        arquivo.close()
 
     def janelaSimulacao(self):
         
@@ -128,40 +111,51 @@ class Aplication:
             listaLabels.append(label)
         for x in range(0, len(listaLabels)):
             listaLabels[x].pack(side = LEFT)
-        #listaLabels[0]["text"] = listaLabels[0]["text"]+"\nJNDuebfeubUBB"
 
-        # = math.ceil(self.listaProcessos[0].TAMANHO/tamanhoPagina)
-        #print("N = ",n)
+        processosSimulados = 0
+        processosSimultaneos = 0
+        processosSimultaneosTotal = 0
+        processosSemAguardar = 0
+        condAguardar = True
         processosDentro = []
-        #filaEspera = []
         tempoTotal = 1
         tempoEspera = 0
-        #tempoProcessos = 1
-        #cond = True
+        arquivo = open("log_saida.txt","w")
         print("tempo | processo | posicao_inicial_na_memoria | ação")
         input()
+        # Começo do loop da simulação
         while(True):
             print("Quantidade de páginas disponíveis: ",qtdPaginas)
-            #cond2 = True
-            #x = 0
             while(True):
                 if self.listaProcessos: # Enquanto processos estiverem esperando
                     if(self.listaProcessos[0].qtd_paginas <= qtdPaginas):
                         if(self.listaProcessos[0].T_CRIADO <= tempoTotal):
 
                             print("Tempo quando entrou: ",tempoTotal," Processo: ",self.listaProcessos[0].ID," NULL"," Entrou")
+                            arquivo.write(str(tempoTotal)+","+str(self.listaProcessos[0].ID)+",1"+",ENTROU\n")
+                            processosSimulados+=1
+                            processosSimultaneos+=1
+                            if(condAguardar):
+                                processosSemAguardar+=1
+                            else:
+                                condAguardar = True
                             if(self.listaProcessos[0].T_CRIADO == self.listaProcessos[0].T_MORTO):
                                 print("Tempo quando saiu: ",tempoTotal," Processo: ",self.listaProcessos[0].ID," NULL","|| Saiu")
+                                arquivo.write(str(tempoTotal)+","+str(self.listaProcessos[0].ID)+",1"+",SAIU\n")
+
                                 self.listaProcessos.pop(0)
                             else:
                                 qtdPaginas -= self.listaProcessos[0].qtd_paginas
                                 self.listaProcessos[0].tempoMorrer = tempoTotal + (self.listaProcessos[0].T_MORTO - self.listaProcessos[0].T_CRIADO)
                                 processosDentro.append(self.listaProcessos.pop(0))
-                                #tempoTotal += 1
                     else:
+                        if(processosSimultaneos > processosSimultaneosTotal):
+                            processosSimultaneosTotal = processosSimultaneos
+                        processosSimultaneos = 0
+                        condAguardar = False
                         print("Tempo: ",tempoTotal," Processo: ",self.listaProcessos[0].ID," NULL"," Esperando", "Tempo de espera total: ", tempoEspera)
+                        arquivo.write(str(tempoTotal)+","+str(self.listaProcessos[0].ID)+",?,FILA\n")
                         tempoEspera += 1
-                        #tempoTotal += 1
                         break
                     if self.listaProcessos: # Caso seja o último processo, vai tentar acessar a primeira posição da lista, que já está vazia, logo o if para verificar
                         if(self.listaProcessos[0].T_CRIADO != tempoTotal): # Caso não tenha mais nenhum processo a ser criado no mesmo tempo sai do loop
@@ -176,6 +170,7 @@ class Aplication:
                     if(processosDentro[a].tempoMorrer == tempoTotal):
                         qtdPaginas += processosDentro[a].qtd_paginas
                         print("Tempo quando saiu: ",tempoTotal," Processo: ",processosDentro[a].ID," NULL","|| Saiu")
+                        arquivo.write(str(tempoTotal)+","+str(processosDentro[a].ID)+",1"+",SAIU\n")
                         processosDentro.pop(a)
                         a-=1
                     a+=1 
@@ -184,7 +179,20 @@ class Aplication:
                 break
             tempoTotal += 1
             input()
+        
         print("Fim da Simulação")
+        print("Processos simulados: ", processosSimulados)
+        print("Número máximo de processos em simultâneo na memória: ", processosSimultaneosTotal)
+        print("Processos que não tiveram que aguardar: ", processosSemAguardar)
+        print("Número de processos que precisaram aguardar ao menos 1 tempo para ganhar espaço na memória: ", processosSimulados - processosSemAguardar)
+        #arquivo.write("Fim da Simulação"+
+        #"\nProcessos simulados: "+ str(processosSimulados)+
+        #"\nNúmero máximo de processos em simultâneo na memória: "+ str(processosSimultaneosTotal)+
+        #"\nProcessos que não tiveram que aguardar: "+ str(processosSemAguardar)+
+        #"\nNúmero de processos que precisaram aguardar ao menos 1 tempo para ganhar espaço na memória: "+ str(processosSimulados-processosSemAguardar))
+        arquivo.close()
+        input("Clique para sair")
+        return
     
 root = Tk()
 Aplication(root)
