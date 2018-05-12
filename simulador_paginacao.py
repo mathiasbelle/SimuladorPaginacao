@@ -9,6 +9,7 @@ class Simulacao:
     TAMANHO = 0
     qtd_paginas = 0
     tempoMorrer = 0
+    fragmentacaoInterna = 0
 
 class Aplication:
     listaProcessos = []
@@ -79,6 +80,7 @@ class Aplication:
             processoAtual.T_MORTO = int(linha[2])
             processoAtual.TAMANHO = int(linha[3])
             processoAtual.qtd_paginas = math.ceil(processoAtual.TAMANHO/int(self.tamanhosPaginaStrings.get()))
+            processoAtual.fragmentacaoInterna = processoAtual.qtd_paginas*int(self.tamanhosPaginaStrings.get()) - processoAtual.TAMANHO
             self.listaProcessos.append(processoAtual)
 
         arquivo.close()
@@ -92,31 +94,33 @@ class Aplication:
         qtdPaginas = tamanhoMemoria / tamanhoPagina
         print("quantidade paginas: ", qtdPaginas)
 
-        janela2 = Tk()
+        #janela2 = Tk()
 
-        container2 = Frame(janela2)
-        container2.pack()
+        #container2 = Frame(janela2)
+        #container2.pack()
 
-        logSaidaTitulo = Label(container2, text = "Log Saida")
-        logSaidaTitulo.pack()
+        #logSaidaTitulo = Label(container2, text = "Log Saida")
+        #logSaidaTitulo.pack()
 
-        logSaida = Label(container2, text = "Vazio")
-        logSaida.pack()
+        #logSaida = Label(container2, text = "Vazio")
+        #logSaida.pack()
 
 
-        listaLabels = [] # Lista de Labels das paginas
+        #listaLabels = [] # Lista de Labels das paginas
 
-        for x in range(0, int(qtdPaginas)):
-            label = Label(container2, text = "Pagina "+str(x)+"\t")
-            listaLabels.append(label)
-        for x in range(0, len(listaLabels)):
-            listaLabels[x].pack(side = LEFT)
+        #for x in range(0, int(qtdPaginas)):
+        #    label = Label(container2, text = "Pagina "+str(x)+"\t")
+        #    listaLabels.append(label)
+        #for x in range(0, len(listaLabels)):
+        #    listaLabels[x].pack(side = LEFT)
 
         processosSimulados = 0
-        processosSimultaneos = 0
         processosSimultaneosTotal = 0
         processosSemAguardar = 0
         condAguardar = True
+        fragmentacaoInternaTotal = 0
+        tempoFragmentacao = 0
+        condFragmentacao = True
         processosDentro = []
         tempoTotal = 1
         tempoEspera = 0
@@ -134,11 +138,14 @@ class Aplication:
                             print("Tempo quando entrou: ",tempoTotal," Processo: ",self.listaProcessos[0].ID," NULL"," Entrou")
                             arquivo.write(str(tempoTotal)+","+str(self.listaProcessos[0].ID)+",1"+",ENTROU\n")
                             processosSimulados+=1
-                            processosSimultaneos+=1
+                            fragmentacaoInternaTotal += self.listaProcessos[0].fragmentacaoInterna
+                            condFragmentacao = True
+
                             if(condAguardar):
                                 processosSemAguardar+=1
                             else:
                                 condAguardar = True
+
                             if(self.listaProcessos[0].T_CRIADO == self.listaProcessos[0].T_MORTO):
                                 print("Tempo quando saiu: ",tempoTotal," Processo: ",self.listaProcessos[0].ID," NULL","|| Saiu")
                                 arquivo.write(str(tempoTotal)+","+str(self.listaProcessos[0].ID)+",1"+",SAIU\n")
@@ -149,9 +156,10 @@ class Aplication:
                                 self.listaProcessos[0].tempoMorrer = tempoTotal + (self.listaProcessos[0].T_MORTO - self.listaProcessos[0].T_CRIADO)
                                 processosDentro.append(self.listaProcessos.pop(0))
                     else:
-                        if(processosSimultaneos > processosSimultaneosTotal):
-                            processosSimultaneosTotal = processosSimultaneos
-                        processosSimultaneos = 0
+                        if(condFragmentacao and self.listaProcessos[0].TAMANHO <= fragmentacaoInternaTotal):
+                            print("Não entrou por conta da fragmentação")
+                            tempoFragmentacao += 1
+                            condFragmentacao =  False
                         condAguardar = False
                         print("Tempo: ",tempoTotal," Processo: ",self.listaProcessos[0].ID," NULL"," Esperando", "Tempo de espera total: ", tempoEspera)
                         arquivo.write(str(tempoTotal)+","+str(self.listaProcessos[0].ID)+",?,FILA\n")
@@ -165,9 +173,14 @@ class Aplication:
             if processosDentro:
                 a = 0
                 while(True):
+                    if(len(processosDentro) > processosSimultaneosTotal): # Caso a quantidade de processos simultaneos atual seja maior que a anterior
+                        processosSimultaneosTotal = len(processosDentro)
                     if(a >= len(processosDentro)):
                         break
                     if(processosDentro[a].tempoMorrer == tempoTotal):
+
+                        fragmentacaoInternaTotal -= processosDentro[a].fragmentacaoInterna
+
                         qtdPaginas += processosDentro[a].qtd_paginas
                         print("Tempo quando saiu: ",tempoTotal," Processo: ",processosDentro[a].ID," NULL","|| Saiu")
                         arquivo.write(str(tempoTotal)+","+str(processosDentro[a].ID)+",1"+",SAIU\n")
@@ -178,13 +191,25 @@ class Aplication:
             if not self.listaProcessos and not processosDentro: # Quando todos os processos já tiverem entrado e saído
                 break
             tempoTotal += 1
+            print("Fragmentação = ", fragmentacaoInternaTotal)
             input()
         
         print("Fim da Simulação")
+        # Contabilidade essencial
+        print("\nCONTABILIDADE ESSENCIAL")
         print("Processos simulados: ", processosSimulados)
         print("Número máximo de processos em simultâneo na memória: ", processosSimultaneosTotal)
         print("Processos que não tiveram que aguardar: ", processosSemAguardar)
         print("Número de processos que precisaram aguardar ao menos 1 tempo para ganhar espaço na memória: ", processosSimulados - processosSemAguardar)
+        # Contabilidade extra
+        print("\nCONTABILIDADE EXTRA")
+        print("Tempo médio geral de espera para alocação na memória: ", tempoTotal / processosSimulados)
+        if(processosSimulados-processosSemAguardar > 0): # Para evitar divisão por 0, caso nenhum processo teve que esperar (processosSimulados-processosSemAguardar = 0)
+            print("Tempo médio de espera apenas dos processos que precisaram esperar 1 tempo ou mais: ", tempoEspera / (processosSimulados-processosSemAguardar))
+        else:
+            print("Tempo médio de espera apenas dos processos que precisaram esperar 1 tempo ou mais: 0")
+        print("Quantidade de tempos em que havia memória livre para colocar algum processo, porém que isso não ocorreu devido a fragmentação interna: ", tempoFragmentacao)
+        
         #arquivo.write("Fim da Simulação"+
         #"\nProcessos simulados: "+ str(processosSimulados)+
         #"\nNúmero máximo de processos em simultâneo na memória: "+ str(processosSimultaneosTotal)+
