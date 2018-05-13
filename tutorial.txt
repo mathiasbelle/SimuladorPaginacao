@@ -1,0 +1,5 @@
+Windows: Instalar Python 3 (Tkiner já incluso: https://www.python.org/downloads/)
+
+Linux: Instalar Python 3 e Tkinter
+Caso gere erro de encoding adicione a seguinte linha no começo do arquivo simulador_paginacao.py:
+# -*- coding: utf-8 -*-
